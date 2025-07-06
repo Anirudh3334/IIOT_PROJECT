@@ -1,0 +1,83 @@
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+#include <MPU6050.h>
+
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 64
+
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
+MPU6050 mpu;
+
+void setup() {
+  Serial.begin(9600);
+  Wire.begin();
+
+  // Initialize OLED
+  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
+    Serial.println("SSD1306 allocation failed");
+    for (;;); // Don't proceed, loop forever
+  }
+  display.clearDisplay();
+  display.setTextColor(SSD1306_WHITE);
+  display.setTextSize(1);
+  display.setCursor(0, 0);
+  display.println("Initializing MPU6050...");
+  display.display();
+
+  // Initialize MPU6050
+  mpu.initialize();
+  if (!mpu.testConnection()) {
+    display.clearDisplay();
+    display.setCursor(0, 0);
+    display.println("MPU6050 not found!");
+    display.display();
+    while (1); // Freeze
+  }
+
+  display.clearDisplay();
+  display.setCursor(0, 0);
+  display.println("MPU6050 Ready!");
+  display.display();
+  delay(1500);
+}
+
+void loop() {
+  int16_t ax, ay, az;
+  int16_t gx, gy, gz;
+
+  // Get accelerometer and gyroscope data
+  mpu.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
+
+  // Display data on OLED
+  display.clearDisplay();
+  display.setCursor(0, 0);
+  display.print("Accel (x,y,z):");
+  display.setCursor(0, 10);
+  display.print(ax); display.print(", ");
+  display.print(ay); display.print(", ");
+  display.println(az);
+
+  display.setCursor(0, 25);
+  display.print("Gyro  (x,y,z):");
+  display.setCursor(0, 35);
+  display.print(gx); display.print(", ");
+  display.print(gy); display.print(", ");
+  display.println(gz);
+
+  // Optional: show simple tilt angle using accelerometer
+  float axf = ax / 16384.0;
+  float ayf = ay / 16384.0;
+  float azf = az / 16384.0;
+  float angle_x = atan2(ayf, azf) * 180 / PI;
+  float angle_y = atan2(axf, azf) * 180 / PI;
+
+  display.setCursor(0, 50);
+  display.print("Angle X: "); display.print(angle_x, 1);
+  display.setCursor(0, 58);
+  display.print("Angle Y: "); display.print(angle_y, 1);
+
+  display.display();
+  delay(200);
+}
+
