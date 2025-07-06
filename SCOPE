@@ -1,0 +1,4 @@
+Real-time reading of accelerometer and gyroscope data
+Displaying sensor values and computed orientation angles on an SSD1306 OLED
+Simulation demonstrated via Wokwi
+Documentation including flowchart, code, circuit diagram, demo video
